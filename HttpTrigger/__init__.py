@@ -1,15 +1,18 @@
 from flask import Flask
-app = Flask(__name__)
+from datetime import datetime, timedelta
+
+import azure.functions as func
+import logging
 
 import requests
 import json
-import locale
-from datetime import datetime, timedelta
+
+app = Flask(__name__)
 
 @app.route('/')
-def main():
-    locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
-
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
+    
     r = requests.get('https://api.bitcointrade.com.br/v3/public/BRLBTC/ticker')
     btc_cotacao = ""
     btc_cotacao_data = ""
@@ -47,8 +50,8 @@ def main():
         </div>\
         <div style='float:left; width: 33%; border: 1px solid black;height:100px; text-align: center;'><br>ETH<br>{}<br>{}\
         </div>\
-    </div>".format(btc_cotacao_data, locale.currency(btc_cotacao, grouping=True),
-    bch_cotacao_data, locale.currency(bch_cotacao, grouping=True),
-    eth_cotacao_data, locale.currency(eth_cotacao, grouping=True))
+    </div>".format(btc_cotacao_data, btc_cotacao,
+    bch_cotacao_data, bch_cotacao,
+    eth_cotacao_data, eth_cotacao)
 
-    return html
+    return func.HttpResponse(body=html, mimetype='text/html')
